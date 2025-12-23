@@ -3,7 +3,7 @@ import os
 import re
 from datetime import datetime
 
-path = r"C:\Users\andre\OneDrive\Desktop\Marketing\ToDo/"
+path = r"C:\Users\andre\Documents\Python\rt_code"
 source_file = 'Auswahl_Studie Social Media-Performance Beispiel 2025' + '.xlsx'
 study = 'Studie Social Media-Performance Beispiel 2025'
 ########################################################################################################################
@@ -29,7 +29,7 @@ def extract_text(element):
 def get_variables(row):
     company = extract_text(row['Firma'])
     name = extract_text(row['VN+NN kopiert mit Umlaute'])
-    position = extract_text(row['Position']).lower()
+    position = extract_text(row['Position'])
     mail = extract_text(row['richtige eMail']).lower()
     contact = str(extract_text(row['letzter Kontakt'])).lower()
     notes = str(extract_text(row['Bemerkungen'])).lower()
@@ -51,10 +51,10 @@ def get_points(company, name, position, mail, contact, notes, country, study):
     # Studienreihen
     marketing_keys = ['marketing', 'commerce', 'vertrieb', 'seo', 'sea', 'business', 'vertrieb', 'sales', 'key account']
     if 'social media' in study.lower():
-        if ('content' in (position or notes) or 'social' in (position or notes)):
+        if ('content' in (position.lower() or notes) or 'social' in (position.lower() or notes)):
             points += 5
     else:
-        if any(k in position for k in marketing_keys):
+        if any(k in position.lower() for k in marketing_keys):
             points += 5
     # Name und Kontakt
     if len(name) > 4:
@@ -80,9 +80,9 @@ def get_points(company, name, position, mail, contact, notes, country, study):
                 'Media M', 'mediaservice', 'Medien', 'Press', 'precher', 'Werbung', 'Public Affair', 'medien']
     keywords_s = ['resse', 'press@', 'pr@']
 #    if (any((k in position or k in mail) for k in keywords) or 'presse' in notes):
-    if any(k in mail for k in keywords_s) or 'presse' in notes or 'presse' in position:
+    if any(k in mail for k in keywords_s) or 'presse' in notes or 'presse' in position.lower():
         points -= 10
-    if not ('marketing' in position or 'marketing' in mail):
+    if not ('marketing' in position.lower() or 'marketing' in mail):
         points += 1
     #Abwesend/ nicht verfügbar?
     if mail[1] == '(':
@@ -112,8 +112,8 @@ if __name__ == '__main__':
         position_list = []
         for ID, e in enumerate(entries):
             points = e[0]
-            position = extract_text(e[13])
-            if any(p in position for p in position_list):
+            position = extract_text(e[13]).lower()
+            if len(position) > 4 and any(p in position for p in position_list):
                 points -= 10
             position_list.append(position)
             ap_dict[company][ID][0] = points
