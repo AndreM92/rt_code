@@ -2,11 +2,18 @@ import pandas as pd
 import os
 import re
 from datetime import datetime
+from openpyxl import load_workbook
 
 path = r"C:\Users\andre\Documents\Python\rt_code"
-source_file = 'Auswahl_Studie Social Media-Performance Beispiel 2025' + '.xlsx'
-study = 'Studie Social Media-Performance Beispiel 2025'
+source_file = 'Auswahl_WMA Wertpapiere 2026_vorläufig' + '.xlsx'
+study = 'Werbemarktanalyse Wertpapiere 2026'
+positivliste = ['online', 'werbung']
+negativliste = ['assisten', 'produkt']
+
 ########################################################################################################################
+#source_file = 'Auswahl_Studie Social Media-Performance Beispiel 2025' + '.xlsx'
+#study = 'Studie Social Media-Performance Beispiel 2025'
+
 # Vorbereitung:
 # Alle roten Mails herauslöschen (da Farben nicht beachtet werden können)
 # Mit Robinsonliste abgleichen
@@ -36,7 +43,7 @@ def get_variables(row):
     country = str(extract_text(row['Land'])).lower()
     return company, name, position, mail, contact, notes, country
 
-def get_points(company, name, position, mail, contact, notes, country, study):
+def get_points(name, position, mail, contact, notes, country, study, font_color, positivliste, negativliste):
     points = 0
     # Studienbesteller
     if len(notes) > 50:
@@ -69,9 +76,13 @@ def get_points(company, name, position, mail, contact, notes, country, study):
         points += 10
     if 'kein interess' in notes:
         points -= 10
-    # Ausländische Firmen ausschließen (?)
-    if 'schweiz' in country or 'österreich' in country or 'liechtenstein' in country or 'luxemburg' in country:
-        points -= 10
+    # Ausländische Firmen abwerten oder ausschließen
+    if len(country) > 4 and not 'deutschland' in country:
+        if ('schweiz' in country or 'österreich' in country or 'liechtenstein' in country or 'switzerland' in country
+                or 'austria' in country):
+            points -= 5
+        else:
+            points -= 15
     if 'elternzeit' in notes and (str(datetime.now().year) in contact or str(datetime.now().year-1) in contact):
         points -= 10
     # Eindeutige Pressekontakte ausschließen
@@ -84,39 +95,85 @@ def get_points(company, name, position, mail, contact, notes, country, study):
         points -= 10
     if not ('marketing' in position.lower() or 'marketing' in mail):
         points += 1
-    #Abwesend/ nicht verfügbar?
+    # Abwesend/ nicht verfügbar?
     if mail[1] == '(':
         points -= 20
+    # Schriftfarbe
+    if 'FF4F81BD' in font_color:
+        points += 20
+    if 'FF9BBB59' in font_color:
+        points += 10
+    if 'FFFF0000' in font_color:
+        points -= 999
+    # Eigene Positiv- und Negativliste
+    if any(e in position.lower() for e in positivliste):
+        points += 10
+    if any(e in position.lower() for e in negativliste):
+        points -= 10
     return points
 
 
 if __name__ == '__main__':
     os.chdir(path)
-    contacts_file = pd.read_excel(source_file)
-    col_names = list(contacts_file.columns)
-
+    df_contacts_file = pd.read_excel(source_file)
+    col_names = list(df_contacts_file.columns)
+    # Excel mit openpyxl laden (für Formatierung)
+    wb = load_workbook(source_file, data_only=False)
+    ws = wb.active
     ap_dict = {}
-
-    for id, row in contacts_file.iterrows():
+    for id, row in df_contacts_file.iterrows():
         company, name, position, mail, contact, notes, country = get_variables(row)
         if len(str(mail)) <= 10:
             continue
-        points = get_points(company, name, position, mail, contact, notes, country, study)
+        # Index der Spalte "richtige eMail" finden
+        email_col = next(i for i, c in enumerate(ws[1], start=1)
+            if c.value and str(c.value).strip().lower() == "richtige email")
+        # entsprechende Zelle und Schriftfarbe holen
+        cell = ws.cell(row=id + 2, column=email_col)  # +1 Header, +1 von 0- auf 1-basiert
+        font_color = str(getattr(getattr(cell.font, "color", None), "rgb", None) or "NO_COLOR")
+        points = get_points(name, position, mail, contact, notes, country, study, font_color, positivliste, negativliste)
         new_row = [points] + [v for v in row]
-        if company in ap_dict:
-            ap_dict[company].append(new_row)
+        company_appendix = ['GmbH & Co. KG', 'gmbh', 'mbh', 'inc', 'limited', 'ltd', 'llc', 'co.', 'lda', 'a.s.', 'SE'
+                            'S.A.', ' OG', ' AG', ' SE', 'GmbH', 'B.V.', 'KG', 'LLC', 'NV', 'N.V.', '& Co.', 'S.L.U.',
+                            '(', ')', '.de', '.com', '.at', 'oHG', 'Ltd.', 'Limited', 'eG', 'P.S.K.', 'S.p.A.']
+        company_s = company
+        for a in company_appendix:
+            company_s = company_s.replace(a,'').strip()
+        if company_s in ap_dict:
+            ap_dict[company_s].append(new_row)
         else:
-            ap_dict[company] = [new_row]
-    # Vary the positions
+            ap_dict[company_s] = [new_row]
+    # Vary the positions and email structures
     for company, entries in ap_dict.items():
         position_list = []
+        marketing_h = 0
         for ID, e in enumerate(entries):
+            mail = str(e[17])
+            if mail.find('.') > 2:
+                pointpos_short = False
+            else:
+                pointpos_short = True
             points = e[0]
             position = extract_text(e[13]).lower()
-            if len(position) > 4 and any(p in position for p in position_list):
-                points -= 10
+            if len(position) <= 4:
+                continue
+            if 'marketing' in position:
+                marketing_h += 1
+            if any(p in position for p in position_list):
+                points -= 5
+                if 'marketing' in position and marketing_h > 4:
+                    points -= 10
+            if mail.find('.') > 2:
+                if pointpos_short == True:
+                    points += 10
+                    pointpos_short = False
+            else:
+                if pointpos_short == False:
+                    points += 10
+                    pointpos_short = True
             position_list.append(position)
             ap_dict[company][ID][0] = points
+
     # Sort each company's list by points descending
     for company in ap_dict:
         ap_dict[company].sort(key=lambda x: x[0], reverse=True)
@@ -132,8 +189,17 @@ if __name__ == '__main__':
                 ap_dict_f[company] = [e]
     # Trim each company's list to ten or less
     ap_dict_t = {}
-    for company in list(ap_dict_f):
-        ap_dict_t[company] = ap_dict_f[company][:10]
+    for company, entries in ap_dict_f.items():
+        n = len(entries)
+        if n >= 10:
+            limit = 10
+        elif n >= 7:
+            limit = 7
+        elif n >= 5:
+            limit = 5
+        else:
+            limit = 3
+        ap_dict_t[company] = entries[:limit]
     # Transform the entries to a list format
     cleaned_rows = []
     for company, entries in ap_dict_t.items():
