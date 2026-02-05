@@ -5,8 +5,8 @@ from datetime import datetime
 from openpyxl import load_workbook
 
 path = r"C:\Users\andre\Documents\Python\rt_code"
-source_file = 'Auswahl_WMA Wertpapiere 2026_vorläufig' + '.xlsx'
-study = 'Werbemarktanalyse Wertpapiere 2026'
+source_file = 'Auswahl_WMA Kfz-Versicherung 2026_vorläufig' + '.xlsx'
+study = 'Werbemarktanalyse Kfz-Versicherung 2026'
 positivliste = ['online', 'werbung']
 negativliste = ['assisten', 'produkt']
 
@@ -28,7 +28,7 @@ def extract_text(element):
             return element
         elif len(element) >= 1:
             repl_element = element.replace('\u200b','').replace('\xa0', ' ').replace('\\xa0', ' ').replace('\n',' ')
-            new_element = re.sub('\s+', ' ', repl_element).strip()
+            new_element = re.sub(r'\s+', ' ', repl_element).strip()
             return new_element
         else:
             return element
@@ -111,16 +111,23 @@ def get_points(name, position, mail, contact, notes, country, study, font_color,
     if any(e in position.lower() for e in negativliste):
         points -= 10
     return points
-
+########################################################################################################################
 
 if __name__ == '__main__':
     os.chdir(path)
-    df_contacts_file = pd.read_excel(source_file)
+    df_contacts_file = pd.read_excel(source_file, engine="openpyxl")
     col_names = list(df_contacts_file.columns)
     # Excel mit openpyxl laden (für Formatierung)
     wb = load_workbook(source_file, data_only=False)
     ws = wb.active
     ap_dict = {}
+    company_appendix = ['GmbH & Co. KG', 'gmbh', 'mbh', 'inc', 'limited', 'ltd', 'llc', 'co.', 'lda', 'a.s.', 'SE'
+                        'S.A.', ' OG', ' AG', ' SE', 'GmbH', 'B.V.', 'KG', 'LLC', 'NV', 'N.V.', '& Co.', 'S.L.U.',
+                        '(', ')', '.de', '.com', '.at', 'oHG', 'Ltd.', 'Limited', 'eG', 'P.S.K.', 'S.p.A.']
+    press_keywords = ['resse', 'press@', 'Medienk', 'edaktion', 'edakteur', 'PR', 'ommunikation', 'ommunication',
+                      'elation', 'Öffentlich', 'Media M', 'mediaservice', 'Medien', 'Press', 'precher', 'Werbung',
+                      'Public Affair', 'medien']
+    pks = ['resse', 'press@', 'pr@']
     for id, row in df_contacts_file.iterrows():
         company, name, position, mail, contact, notes, country = get_variables(row)
         if len(str(mail)) <= 10:
@@ -133,12 +140,12 @@ if __name__ == '__main__':
         font_color = str(getattr(getattr(cell.font, "color", None), "rgb", None) or "NO_COLOR")
         points = get_points(name, position, mail, contact, notes, country, study, font_color, positivliste, negativliste)
         new_row = [points] + [v for v in row]
-        company_appendix = ['GmbH & Co. KG', 'gmbh', 'mbh', 'inc', 'limited', 'ltd', 'llc', 'co.', 'lda', 'a.s.', 'SE'
-                            'S.A.', ' OG', ' AG', ' SE', 'GmbH', 'B.V.', 'KG', 'LLC', 'NV', 'N.V.', '& Co.', 'S.L.U.',
-                            '(', ')', '.de', '.com', '.at', 'oHG', 'Ltd.', 'Limited', 'eG', 'P.S.K.', 'S.p.A.']
         company_s = company
         for a in company_appendix:
             company_s = company_s.replace(a,'').strip()
+        # Kürzung des Firmen-Keywords auf den ersten Namen:
+        if company_s.find(' ') >= 3:
+            company_s = company_s.split()[0]
         if company_s in ap_dict:
             ap_dict[company_s].append(new_row)
         else:
@@ -147,6 +154,9 @@ if __name__ == '__main__':
     for company, entries in ap_dict.items():
         position_list = []
         marketing_h = 0
+        marketing_hs = 0
+        press_h = 0
+        press_sh = 0
         for ID, e in enumerate(entries):
             mail = str(e[17])
             if mail.find('.') > 2:
@@ -154,15 +164,28 @@ if __name__ == '__main__':
             else:
                 pointpos_short = True
             points = e[0]
-            position = extract_text(e[13]).lower()
+            position = extract_text(e[13])
             if len(position) <= 4:
                 continue
-            if 'marketing' in position:
-                marketing_h += 1
+            if any(k in position for k in press_keywords) or any(k.lower() in mail for k in press_keywords) or \
+                    any('presse' in str(t).lower() for t in e):
+                if any(e.lower() in position for e in pks) or any(e.lower() in mail for e in pks):
+                    if press_sh >= 1:
+                        points -= 10
+                    press_sh += 1
+                elif press_h >= 3 and any(k in position for k in pks) and press_h >= 1:
+                    points -= 10
+                press_h += 1
             if any(p in position for p in position_list):
                 points -= 5
-                if 'marketing' in position and marketing_h > 4:
+            if 'marketing' in position:
+                if marketing_h >= 3:
                     points -= 10
+                marketing_h += 1
+                if position == 'marketing':
+                    if marketing_hs >= 1:
+                        points -= 10
+                    marketing_hs += 1
             if mail.find('.') > 2:
                 if pointpos_short == True:
                     points += 10
