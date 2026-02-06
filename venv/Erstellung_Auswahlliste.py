@@ -159,13 +159,24 @@ if __name__ == '__main__':
         press_sh = 0
         for ID, e in enumerate(entries):
             mail = str(e[17])
-            if mail.find('.') > 2:
-                pointpos_short = False
-            else:
-                pointpos_short = True
             points = e[0]
             position = extract_text(e[13])
-            if len(position) <= 4:
+            # Mail variations
+            if ID < 1:
+                if mail.find('.') > 2:
+                    pointpos_short = False
+                else:
+                    pointpos_short = True
+            if ID >= 1:
+                if mail.find('.') > 2:
+                    if pointpos_short == True:
+                        points += 10
+                        pointpos_short = False
+                else:
+                    if pointpos_short == False:
+                        points += 10
+                        pointpos_short = True
+            if not position or len(position) < 4:
                 continue
             if any(k in position for k in press_keywords) or any(k.lower() in mail for k in press_keywords) or \
                     any('presse' in str(t).lower() for t in e):
@@ -178,22 +189,14 @@ if __name__ == '__main__':
                 press_h += 1
             if any(p in position for p in position_list):
                 points -= 5
-            if 'marketing' in position:
+            if 'marketing' in position.lower():
                 if marketing_h >= 3:
                     points -= 10
                 marketing_h += 1
-                if position == 'marketing':
+                if position.lower() == 'marketing':
                     if marketing_hs >= 1:
                         points -= 10
                     marketing_hs += 1
-            if mail.find('.') > 2:
-                if pointpos_short == True:
-                    points += 10
-                    pointpos_short = False
-            else:
-                if pointpos_short == False:
-                    points += 10
-                    pointpos_short = True
             position_list.append(position)
             ap_dict[company][ID][0] = points
 
