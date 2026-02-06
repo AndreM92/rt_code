@@ -7,8 +7,8 @@ from datetime import datetime
 path = r"C:\Users\andre\OneDrive\Desktop\Marketing\ToDo/"
 
 # Kontaktliste verkleinern
-all_contacts_file = 'Kontakte_Glücksspiel_1'
-p_contacts =  path + all_contacts_file + ".xlsx"
+all_contacts_file = 'Kontakte_Versicherungen'
+p_contacts = path + '/' + all_contacts_file + ".xlsx"
 p_distinct_contacts = p_contacts
 ########################################################################################################################
 
@@ -22,7 +22,7 @@ def extract_text(element):
             return element
         elif len(element) >= 1:
             repl_element = element.replace('\u200b','').replace('\xa0', ' ').replace('\\xa0', ' ').replace('\n',' ')
-            new_element = re.sub('\s+', ' ', repl_element).strip()
+            new_element = re.sub(r'\s+', ' ', repl_element).strip()
             return new_element
         else:
             return element
@@ -99,7 +99,7 @@ if __name__ == '__main__':
 
 ########################################################################################################################
 # Zu überprüfende Firmen
-new_contacts_file = 'eV Glücksspielanbieter'
+new_contacts_file = 'Liste Firmen_WMA ÖPNV'
 p_newc = r"C:\Users\andre\OneDrive\Desktop\Marketing\ToDo/" + new_contacts_file + ".xlsx"
 
 # Volle Kontaktliste

@@ -96,8 +96,8 @@ def get_points(name, position, mail, contact, notes, country, study, font_color,
     if not ('marketing' in position.lower() or 'marketing' in mail):
         points += 1
     # Abwesend/ nicht verfügbar?
-    if mail[1] == '(':
-        points -= 20
+    if '(' in mail[:3]:
+        points -= 99
     # Schriftfarbe
     if 'FF4F81BD' in font_color:
         points += 20
