@@ -5,17 +5,15 @@ from datetime import datetime
 from openpyxl import load_workbook
 
 path = r"C:\Users\andre\Documents\Python\rt_code"
+#path = r"C:\Users\mail\OneDrive\Dokumente\OneDrive\APs"
 source_file = 'Auswahl_WMA Kfz-Versicherung 2026_vorläufig' + '.xlsx'
 study = 'Werbemarktanalyse Kfz-Versicherung 2026'
-positivliste = ['online', 'werbung']
-negativliste = ['assisten', 'produkt']
+positivliste = ['art director', 'brand', 'digital', 'media', 'online', 'performance', 'social', 'werbung']
+negativliste = ['crm', 'dialogmarketing', 'direktmarketing', 'einkauf', 'legal', 'procurement']
 
 ########################################################################################################################
-#source_file = 'Auswahl_Studie Social Media-Performance Beispiel 2025' + '.xlsx'
-#study = 'Studie Social Media-Performance Beispiel 2025'
-
 # Vorbereitung:
-# Alle roten Mails herauslöschen (da Farben nicht beachtet werden können)
+# Alle roten Mails herauslöschen
 # Mit Robinsonliste abgleichen
 
 # Extract text from elements
