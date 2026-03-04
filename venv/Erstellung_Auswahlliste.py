@@ -4,10 +4,11 @@ import re
 from datetime import datetime
 from openpyxl import load_workbook
 
-path = r"C:\Users\andre\Documents\Python\rt_code"
+#path = r"C:\Users\andre\Documents\Python\rt_code"
 #path = r"C:\Users\mail\OneDrive\Dokumente\OneDrive\APs"
-source_file = 'Auswahl_WMA Kfz-Versicherung 2026_vorläufig' + '.xlsx'
-study = 'Werbemarktanalyse Kfz-Versicherung 2026'
+path = r"C:\Users\andre\OneDrive\Desktop"
+source_file = 'Vorauswahl_SMP Mineralwasser 2026' + '.xlsx'
+study = 'Studie Social Media-Performance Mineralwasser 2026'
 positivliste = ['art director', 'brand', 'digital', 'media', 'online', 'performance', 'social', 'werbung']
 negativliste = ['crm', 'dialogmarketing', 'direktmarketing', 'einkauf', 'legal', 'procurement']
 
@@ -68,8 +69,9 @@ def get_points(name, position, mail, contact, notes, country, study, font_color,
         points += 1
     if 'bestell' in notes or 'bestell' in contact:
         points += 10
-    if 'interess' in notes or 'frag' in notes or 'sprache' in notes or 'anruf' in notes:
-        points += 3
+    if not ('bei interess' in notes or 'falls' in notes):
+        if 'interess' in notes or 'sprache' in notes or 'anruf' in notes:
+            points += 3
     if 'angebot' in notes:
         points += 10
     if 'kein interess' in notes:
