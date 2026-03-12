@@ -5,10 +5,9 @@ from datetime import datetime
 from openpyxl import load_workbook
 
 #path = r"C:\Users\andre\Documents\Python\rt_code"
-#path = r"C:\Users\mail\OneDrive\Dokumente\OneDrive\APs"
 path = r"C:\Users\andre\OneDrive\Desktop"
-source_file = 'Vorauswahl_SMP Mineralwasser 2026' + '.xlsx'
-study = 'Studie Social Media-Performance Mineralwasser 2026'
+source_file = 'Vorauswahl_KI-Performance Kaffee' + '.xlsx'
+study = 'KI-Performance Kaffee und Kaffeemaschinen 2026'
 positivliste = ['art director', 'brand', 'digital', 'media', 'online', 'performance', 'social', 'werbung']
 negativliste = ['crm', 'dialogmarketing', 'direktmarketing', 'einkauf', 'legal', 'procurement']
 
@@ -21,8 +20,10 @@ negativliste = ['crm', 'dialogmarketing', 'direktmarketing', 'einkauf', 'legal',
 def extract_text(element):
     if element:
         if not isinstance(element,(str,int,float)):
-            element = element.text.strip()
-        element = str(element)
+            try:
+                element = element.text.strip()
+            except:
+                element = str(element).strip()
         if element == '':
             return element
         elif len(element) >= 1:

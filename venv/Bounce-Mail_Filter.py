@@ -5,7 +5,7 @@ from datetime import datetime
 
 path = r"C:\Users\andre\OneDrive\Desktop\Marketing\ToDo/"
 source_file = 'messages' + '.csv'
-branch = 'Automatisierungstechnik'
+branch = 'Kaffee'
 ########################################################################################################################
 # Vorbereitung:
 #1. Thunderbird öffnen → Menü → Erweiterungen/Add‑on und Themes
@@ -20,8 +20,8 @@ def extract_text(element):
             try:
                 element = element.text.strip()
             except:
-                return None
-        element = str(element)
+                element = str(element).strip()
+#                return None
         if element == '':
             return element
         elif len(element) >= 1:
