@@ -6,8 +6,8 @@ from openpyxl import load_workbook
 
 #path = r"C:\Users\andre\Documents\Python\rt_code"
 path = r"C:\Users\andre\OneDrive\Desktop"
-source_file = 'Vorauswahl_KI-Performance Kaffee' + '.xlsx'
-study = 'KI-Performance Kaffee und Kaffeemaschinen 2026'
+source_file = 'Vorauswahl_Aps_Studie Social Media-Performance Mineralwasser 2026' + '.xlsx'
+study = 'Studie Social Media-Performance Mineralwasser 2026'
 positivliste = ['art director', 'brand', 'digital', 'media', 'online', 'performance', 'social', 'werbung']
 negativliste = ['crm', 'dialogmarketing', 'direktmarketing', 'einkauf', 'legal', 'procurement']
 
@@ -23,7 +23,8 @@ def extract_text(element):
             try:
                 element = element.text.strip()
             except:
-                element = str(element).strip()
+                pass
+        element = str(element).strip()
         if element == '':
             return element
         elif len(element) >= 1:
