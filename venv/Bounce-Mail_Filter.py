@@ -3,9 +3,9 @@ import os
 import re
 from datetime import datetime
 
-path = r"C:\Users\andre\OneDrive\Desktop\Marketing\ToDo/"
+path = r"C:\Users\andre\OneDrive\Desktop"
 source_file = 'messages' + '.csv'
-branch = 'Kaffee'
+branch = 'Mineralwasser'
 ########################################################################################################################
 # Vorbereitung:
 #1. Thunderbird öffnen → Menü → Erweiterungen/Add‑on und Themes
@@ -16,12 +16,12 @@ branch = 'Kaffee'
 # Extract text from elements
 def extract_text(element):
     if element:
-        if not isinstance(element, (str, int, float)):
+        if not isinstance(element,(str,int,float)):
             try:
                 element = element.text.strip()
             except:
-                element = str(element).strip()
-#                return None
+                pass
+        element = str(element).strip()
         if element == '':
             return element
         elif len(element) >= 1:
