@@ -6,8 +6,8 @@ from openpyxl import load_workbook
 
 #path = r"C:\Users\andre\Documents\Python\rt_code"
 path = r"C:\Users\andre\OneDrive\Desktop"
-source_file = 'Vorauswahl_Aps_Studie Social Media-Performance Mineralwasser 2026' + '.xlsx'
-study = 'Studie Social Media-Performance Mineralwasser 2026'
+source_file = 'Vorauswahl_Aps_Studie KI-Performance Kaffee und Kaffeemaschinen 2026' + '.xlsx'
+study = 'Studie KI-Performance Kaffee und Kaffeemaschinen 2026'
 positivliste = ['art director', 'brand', 'digital', 'media', 'online', 'performance', 'social', 'werbung']
 negativliste = ['crm', 'dialogmarketing', 'direktmarketing', 'einkauf', 'legal', 'procurement']
 
@@ -79,9 +79,9 @@ def get_points(name, position, mail, contact, notes, country, study, font_color,
     if 'kein interess' in notes:
         points -= 10
     # Ausländische Firmen abwerten oder ausschließen
+    dach = ['schweiz', 'switzerland', 'österreich', 'oesterreich', 'austria', 'liechtenstein']
     if len(country) > 4 and not 'deutschland' in country:
-        if ('schweiz' in country or 'österreich' in country or 'liechtenstein' in country or 'switzerland' in country
-                or 'austria' in country):
+        if any(e in country for e in dach):
             points -= 5
         else:
             points -= 15
