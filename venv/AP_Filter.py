@@ -4,10 +4,10 @@ import os
 import re
 from datetime import datetime
 
-path = r"C:\Users\andre\OneDrive\Desktop\Marketing\ToDo/"
+path = r"C:\Users\andre\OneDrive\Desktop/"
 
 # Kontaktliste verkleinern
-all_contacts_file = 'Kontakte_Versicherungen'
+all_contacts_file = 'Energieanbieter_Matzner_Auswahl_2023-11-15'
 p_contacts = path + '/' + all_contacts_file + ".xlsx"
 p_distinct_contacts = p_contacts
 ########################################################################################################################
@@ -99,8 +99,8 @@ if __name__ == '__main__':
 
 ########################################################################################################################
 # Zu überprüfende Firmen
-new_contacts_file = 'Liste Firmen_WMA ÖPNV'
-p_newc = r"C:\Users\andre\OneDrive\Desktop\Marketing\ToDo/" + new_contacts_file + ".xlsx"
+new_contacts_file = 'Liste Firmen_WMA Energie 2026'
+p_newc = r"C:\Users\andre\OneDrive\Desktop/" + new_contacts_file + ".xlsx"
 
 # Volle Kontaktliste
 if __name__ == '__main__':
@@ -115,6 +115,10 @@ if __name__ == '__main__':
         brand, full_name, full_name2, ad_volume = get_source_file_vars(rown, col_list)
         if not brand and not full_name:
             continue
+        if not full_name:
+            full_name = brand
+        if not brand:
+            brand = full_name
 
         full_name_l = full_name.lower()
         full_name_l2 = full_name2.lower()
@@ -136,21 +140,23 @@ if __name__ == '__main__':
 
             if not c_company or len(str(c_company)) <= 4:
                 continue
-            homepage = extract_text(row['Hinweis-Homepage']).lower()
-            hs = homepage.split('.')[0].strip()
+            hl = ''
+            if 'Hinweis-Homepage' in col_list:
+                hl = extract_text(row['Hinweis-Homepage']).lower()
+            hs = hl.split('.')[0].strip()
             if brand and len(brand) >= 3 and full_name and len(full_name) >= 4:
                 c_company_s, name_list = create_keywords(c_company, None)
                 c_company_sl = c_company_s.lower()
                 if c_company_sl in full_name_l or c_company_sl in bl or brand in c_company_s or \
                         c_company_sl in full_name_l2 or bl in full_name_l2 or (len(brand) > 4 and bl in c_company_sl)\
-                        or full_name in homepage:
+                        or c_company_sl in hl:
                     if found1:
                         found1 = found1 + ', ' + found_string
                     else:
                         found1 = found_string
                 if c_company == found1 or len(found1) > 200 or len(found2) >= 1000:
                     continue
-                if (bl in c_company_sl or c_company_sl in bl or bl in homepage) and c_company not in found1:
+                if (bl in c_company_sl or c_company_sl in bl or bl in hl) and c_company not in found1:
                     if found2 and c_company not in found1:
                         found2 = found2 + ', ' + found_string
                     else:
@@ -171,7 +177,7 @@ if __name__ == '__main__':
                             found1 = found_string
                 if c_company in found1 or len(found2) >= 1000 or len(c_company) - len(brand) >= 30:
                     continue
-                if (bl in c_company_sl or c_company_sl in bl or bl in homepage) and c_company not in found1:
+                if (bl in c_company_sl or c_company_sl in bl or bl in hl) and c_company not in found1:
                     if found2 and c_company not in found1:
                         found2 = found2 + ', ' + found_string
                     else:
@@ -208,7 +214,9 @@ if __name__ == '__main__':
         for id, row in df_dist_cont.iterrows():
             rownumber = id + 2
             c_company = extract_text(row['Firma'])
-            hl = extract_text(row['Hinweis-Homepage']).lower()
+            hl = ''
+            if 'Hinweis-Homepage' in col_list:
+                hl = extract_text(row['Hinweis-Homepage']).lower()
             hs = hl.split('.')[0].strip()
             if len(hs) >= 4:
                 c_name_2, name_list_2 = create_keywords(c_company, hs)
