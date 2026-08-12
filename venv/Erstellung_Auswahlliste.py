@@ -6,8 +6,8 @@ from openpyxl import load_workbook
 
 #path = r"C:\Users\andre\Documents\Python\rt_code"
 path = r"C:\Users\andre\OneDrive\Desktop"
-source_file = 'Vorauswahl_Aps_Studie KI-Performance Kaffee und Kaffeemaschinen 2026' + '.xlsx'
-study = 'Studie KI-Performance Kaffee und Kaffeemaschinen 2026'
+source_file = 'Vorauswahl_KI-Performance Versicherungen 2026' + '.xlsx'
+study = 'Studie KI-Performance Versicherungen 2026'
 positivliste = ['art director', 'brand', 'digital', 'media', 'online', 'performance', 'social', 'werbung']
 negativliste = ['crm', 'dialogmarketing', 'direktmarketing', 'einkauf', 'legal', 'procurement']
 
@@ -78,6 +78,8 @@ def get_points(name, position, mail, contact, notes, country, study, font_color,
         points += 10
     if 'kein interess' in notes:
         points -= 10
+    if 'fehlerhaft' in notes:
+        points -= 5
     # Ausländische Firmen abwerten oder ausschließen
     dach = ['schweiz', 'switzerland', 'österreich', 'oesterreich', 'austria', 'liechtenstein']
     if len(country) > 4 and not 'deutschland' in country:
@@ -85,7 +87,7 @@ def get_points(name, position, mail, contact, notes, country, study, font_color,
             points -= 5
         else:
             points -= 15
-    if 'elternzeit' in notes and (str(datetime.now().year) in contact or str(datetime.now().year-1) in contact):
+    if ('elternzeit' in notes or 'mutter' in notes) and (str(datetime.now().year) in contact or str(datetime.now().year-1) in contact):
         points -= 10
     # Eindeutige Pressekontakte ausschließen
     keywords = ['resse', 'press@', 'Medienk', 'edaktion', 'edakteur', 'PR', 'ommunikation', 'ommunication', 'elation',
@@ -145,9 +147,9 @@ if __name__ == '__main__':
         company_s = company
         for a in company_appendix:
             company_s = company_s.replace(a,'').strip()
-        # Kürzung des Firmen-Keywords auf den ersten Namen:
-        if company_s.find(' ') >= 3:
-            company_s = company_s.split()[0]
+        # Kürzung des Firmen-Keywords auf den ersten Namen (Rauten entfernen)
+#        if company_s.find(' ') >= 3:
+#            company_s = company_s.split()[0]
         if company_s in ap_dict:
             ap_dict[company_s].append(new_row)
         else:
